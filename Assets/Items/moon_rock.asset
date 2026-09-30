@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f5337dc5c10f54d80c0564d98f212c, type: 3}
+  m_Name: moon_rock
+  m_EditorClassIdentifier: 
+  id: moon_rock
+  displayName: Moon Rock
+  icon: {fileID: 21300000, guid: a5c00a9113ff23b45a54f849bf9d3844, type: 3}
+  description: Common regolith rock. Basic building material.
+  maxStackSize: 50
+  category: 0
+  worldPrefab: {fileID: 6774210130059043270, guid: 92d9b588f2da85e4681b0e10f5ed36ea, type: 3}

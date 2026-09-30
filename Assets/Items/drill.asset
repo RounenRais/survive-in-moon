@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f5337dc5c10f54d80c0564d98f212c, type: 3}
+  m_Name: drill
+  m_EditorClassIdentifier: 
+  id: drill
+  displayName: Drill
+  icon: {fileID: 21300000, guid: 4e0a83787926c7b41bf304fec7dfeca5, type: 3}
+  description: Hand drill for breaking hard rock.
+  maxStackSize: 1
+  category: 3
+  worldPrefab: {fileID: 8017634199536787493, guid: 2e38885bdf68b0e49888d0eea7a1d07e, type: 3}

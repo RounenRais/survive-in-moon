@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4000619f2d0090546961b8647a6d659f, type: 3}
+  m_Name: StorageCrate
+  m_EditorClassIdentifier: 
+  id: StorageCrate
+  displayName: Storage Crate
+  description: A sealed container for keeping supplies at the base.
+  icon: {fileID: 21300000, guid: 644fb6c39ecf17e409a7bdef834e45ae, type: 3}
+  cost:
+  - item: {fileID: 11400000, guid: 035cd71b54fd44a4a8f6ac2024dde22a, type: 2}
+    quantity: 5
+  buildTime: 45
+  prefab: {fileID: 562493199955701283, guid: d17db8f46d957224696e62665b9bfa62, type: 3}
