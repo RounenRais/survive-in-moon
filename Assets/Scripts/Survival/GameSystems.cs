@@ -7,6 +7,11 @@ public static class GameSystems
 {
     public static void Ensure()
     {
+        if (Object.FindFirstObjectByType<SolarStorms>() == null) // First call in this game scene
+        {
+            MissionLog.Reset();
+            ScienceCards.ResetForNewGame();
+        }
         Make<SolarStorms>("Solar Storms");
         Make<BaseSupplies>("Base Supplies");
         Make<StatusHUD>("Status HUD");
@@ -16,6 +21,7 @@ public static class GameSystems
         Make<CompassUI>("Compass");
         Make<ObjectiveArrow>("Objective Arrow");
         Make<PauseUI>("Pause");
+        Make<DemoKeys>("Demo Keys"); // F1 science card, F2 mission lost (presentation)
         IntroUI.ShowOnce(); // The story cards before play starts
         NasaData.UseEarthPhoto(); // The real Earth (NASA EPIC) in the sky
     }

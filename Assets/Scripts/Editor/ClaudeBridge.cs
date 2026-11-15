@@ -189,6 +189,43 @@ public static class ClaudeBridge
             ScreenCapture.CaptureScreenshot(System.IO.Path.GetFullPath(cmd.Substring(6)), 2);
             return "capturing";
         }
+        if (cmd == "cards")
+        {
+            var go = GameObject.Find("Science Cards");
+            var cv = GameObject.Find("Science Cards") != null ? Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None) : null;
+            string canv = "";
+            if (cv != null) foreach (var c in cv) if (c.name == "Science Cards") canv += $" canvas active={c.gameObject.activeInHierarchy} children={c.transform.childCount} cardActive={(c.transform.childCount > 0 ? c.transform.GetChild(0).gameObject.activeSelf.ToString() : "-")}";
+            var st = SurvivalStats.Player;
+            return $"obj={(go != null)}{canv} inBase={(st != null ? st.InLifeSupport.ToString() : "-")} dose={MissionLog.DoseMsv:0.00}";
+        }
+        if (cmd == "demo card") { ScienceCards.ShowNextDemo(); return "card"; }
+        if (cmd == "demo fail") { GameOverUI.Show(false); return "fail"; }
+        if (cmd.StartsWith("buildwin ")) // buildwin <exe path>: Windows 64-bit player with the build-settings scenes
+        {
+            string exe = cmd.Substring(9);
+            PlayerSettings.productName = "Survive in Moon";
+            PlayerSettings.companyName = "TAY Team";
+            PlayerSettings.bundleVersion = "1.0";
+            var scenes = System.Array.FindAll(EditorBuildSettings.scenes, sc => sc.enabled);
+            var options = new BuildPlayerOptions
+            {
+                scenes = System.Array.ConvertAll(scenes, sc => sc.path),
+                locationPathName = exe,
+                target = BuildTarget.StandaloneWindows64,
+                options = BuildOptions.None
+            };
+            var report = BuildPipeline.BuildPlayer(options);
+            var sum = report.summary;
+            return $"result={sum.result} size={sum.totalSize / (1024 * 1024)} MB time={sum.totalTime} errors={sum.totalErrors} scenes={string.Join(",", options.scenes)}";
+        }
+        if (cmd.StartsWith("renderone ")) // renderone <prefab asset path>|<png path>
+        {
+            string[] p = cmd.Substring(10).Split('|');
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(p[0]);
+            if (prefab == null) return "no prefab " + p[0];
+            BridgeRenderer.Render(prefab, p[1], 2048, p.Length > 2 ? float.Parse(p[2], System.Globalization.CultureInfo.InvariantCulture) : float.NaN);
+            return "rendered " + p[1];
+        }
         if (cmd == "kill") { SurvivalStats.Player?.Hurt(1000f); return "hurt"; }
         if (cmd == "stats")
         {
@@ -334,7 +371,7 @@ public static class BridgeRenderer
         return sb.ToString();
     }
 
-    public static void Render(GameObject prefab, string file, int size)
+    public static void Render(GameObject prefab, string file, int size, float yawOverride = float.NaN)
     {
         var preview = new PreviewRenderUtility();
         try
@@ -342,7 +379,7 @@ public static class BridgeRenderer
             GameObject go = preview.InstantiatePrefabInScene(prefab);
             bool astronaut = go.GetComponentInChildren<SkinnedMeshRenderer>() != null;
             // Astronauts face the camera (turned a little); objects get a 3/4 view
-            go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, astronaut ? 200f : 215f, 0f));
+            go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, float.IsNaN(yawOverride) ? (astronaut ? 200f : 215f) : yawOverride, 0f));
 
             Animator animator = go.GetComponentInChildren<Animator>();
             AnimationClip idle = animator != null && animator.runtimeAnimatorController != null

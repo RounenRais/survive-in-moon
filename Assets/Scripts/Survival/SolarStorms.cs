@@ -140,6 +140,8 @@ public class SolarStorms : MonoBehaviour
         {
             Warning = false;
             stormLength = stormLeft = Current.GameDuration;
+            MissionLog.Storms.Add($"{Current.classType} · {Current.Date.Substring(0, Mathf.Min(10, Current.Date.Length))}");
+            ScienceCards.Show("storm");
         }
     }
 }

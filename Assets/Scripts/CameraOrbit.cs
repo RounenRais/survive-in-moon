@@ -10,7 +10,7 @@ public class CameraOrbit : MonoBehaviour
     [Tooltip("Height above the player's feet that the camera looks at and orbits around (0 = automatic)")]
     public float pivotHeight = 0f;
 
-    [Header("Mouse")]
+        [Header("Mouse")]
     public bool holdRightMouseToLook = true;
     public float mouseSensitivity = 3f; // Degrees per mouse unit
     public bool invertY =    false;

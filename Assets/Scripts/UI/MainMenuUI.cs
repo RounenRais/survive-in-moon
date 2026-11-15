@@ -65,6 +65,8 @@ public class MainMenuUI : UIWindow
         foreach (Collider c in astronaut.GetComponentsInChildren<Collider>()) c.enabled = false;
         Animator animator = astronaut.GetComponentInChildren<Animator>();
         if (animator != null) animator.applyRootMotion = false;
+        // Standing still on the terrain: the foot planting would keep nudging the body down during the idle
+        foreach (AstronautAnimation a in astronaut.GetComponentsInChildren<AstronautAnimation>()) a.enabled = false;
 
         Bounds bounds = new Bounds(astronaut.transform.position, Vector3.zero);
         foreach (Renderer r in astronaut.GetComponentsInChildren<Renderer>()) bounds.Encapsulate(r.bounds);

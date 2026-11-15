@@ -60,6 +60,8 @@ public class BaseSupplies : MonoBehaviour
             }
             PowerProduced = produced;
             PowerUsed = used;
+            if (used > produced)
+                ScienceCards.Show("power");
         }
     }
 

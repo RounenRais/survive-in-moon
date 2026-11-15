@@ -26,12 +26,15 @@ public static partial class GameContentBuilder
         // New buildables
         GameObject greenhouse = SaveBuilding(GreenhouseModel(), "Greenhouse", -5f);
         GameObject garage = SaveBuilding(GarageModel(), "RoverGarage", -2f);
+        GameObject shield = SaveBuilding(RegolithShieldModel(), "RegolithShield", 0f);
         var newBuildables = new List<BuildableDefinition>
         {
             Buildable("Greenhouse", "Greenhouse", "Grows lettuce and potatoes under regolith glass. Needs power and water from the base stock.",
                       90f, greenhouse, ("glass", 6), ("metal_plate", 4)),
             Buildable("RoverGarage", "Rover Garage", "Builds and houses the lunar rover. Fuel cells keep it running.",
                       120f, garage, ("metal_plate", 6), ("battery", 2), ("circuit", 2)),
+            Buildable("RegolithShield", "Regolith Shielding", "Packed lunar soil around the habitat. Inside the base, solar storms lose most of their bite.",
+                      60f, shield, ("moon_rock", 12), ("metal_plate", 2)),
         };
 
         // Power on the existing buildings, and costs that use the new materials
@@ -175,6 +178,26 @@ public static partial class GameContentBuilder
         gh.fastCrop = I("lettuce");
         gh.slowCrop = I("potato");
         gh.plants = plants;
+        return root;
+    }
+
+    // A low berm of regolith-filled bags in an arc, with a radiation sign
+    static GameObject RegolithShieldModel()
+    {
+        var root = new GameObject("RegolithShield");
+        Transform t = root.transform;
+        Material bag = ContentKit.Mat("RegolithBag", new Color(0.62f, 0.6f, 0.55f), 0f, 0.15f);
+        Mesh bagMesh = ContentKit.Box(5.6f, 2.2f, 3.2f, 0.9f);
+        for (int row = 0; row < 3; row++)
+            for (int k = 0; k < 7 - row; k++)
+            {
+                float a = Mathf.Lerp(-60f, 60f, (k + row * 0.5f) / 6f);
+                Vector3 pos = Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0f, 14f) + Vector3.up * (1.1f + row * 2f);
+                ContentKit.Part(t, "Bag", bagMesh, bag, pos, new Vector3(0f, a + (k % 2) * 6f, 0f), null, true);
+            }
+        ContentKit.Part(t, "Post", ContentKit.Cylinder(0.25f, 7f, 10), ContentKit.Gunmetal, new Vector3(0f, 0f, 9f));
+        ContentKit.Part(t, "Sign", ContentKit.Box(3.2f, 3.2f, 0.2f, 0.1f), ContentKit.Mat("SignYellow", new Color(0.95f, 0.8f, 0.2f), 0f, 0.4f), new Vector3(0f, 7.6f, 9f), new Vector3(0f, 0f, 45f));
+        root.AddComponent<RadiationShield>();
         return root;
     }
 

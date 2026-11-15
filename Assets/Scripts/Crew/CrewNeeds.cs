@@ -33,6 +33,12 @@ public class CrewNeeds : MonoBehaviour, IInteractable
     {
         float dt = Time.deltaTime;
         food = Mathf.Max(0f, food - foodDrain * dt);
+        if (food < 25f)
+        {
+            int crew = Mathf.Max(1, CrewManager.Instance != null ? CrewManager.Instance.Members.Count - 1 : 1);
+            MissionLog.CrewHungrySeconds += dt / crew;
+            ScienceCards.Show("crew");
+        }
         bool power = BaseSupplies.Instance == null || BaseSupplies.Instance.HasPower;
         oxygen = power ? Mathf.Min(100f, oxygen + oxygenRefill * dt) : Mathf.Max(0f, oxygen - oxygenDrain * dt);
     }
@@ -132,6 +138,7 @@ public class CrewNeeds : MonoBehaviour, IInteractable
         string what = inv.Slots[best].item.displayName;
         inv.RemoveFromSlot(best, 1);
         food = Mathf.Min(100f, food + bestFood);
+        MissionLog.MealsGivenToCrew++;
         actor.ShowMessage($"Gave {what}");
     }
 }

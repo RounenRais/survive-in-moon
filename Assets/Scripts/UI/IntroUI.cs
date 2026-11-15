@@ -6,7 +6,7 @@ using UnityEngine.UI;
 // Shown once per game start; the game is paused meanwhile.
 public class IntroUI : UIWindow
 {
-    const float W = 760f, H = 600f;
+    const float W = 760f, H = 680f, StageH = 445f; // Stage = the 16:10 story pictures
 
     private static bool shown;
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -18,6 +18,7 @@ public class IntroUI : UIWindow
     {
         public Texture picture;
         public Color tint;
+        public bool alarm;
         public string title;
         public string text;
     }
@@ -41,25 +42,20 @@ public class IntroUI : UIWindow
 
     void Build(RectTransform root)
     {
-        Texture earth = NasaData.EarthPhoto;
-        Texture rocket = Resources.Load<Texture2D>("Intro/ship");
-        Texture hub = Resources.Load<Texture2D>("Intro/base");
-        Texture rover = Resources.Load<Texture2D>("Intro/rover");
-        Texture moon = Resources.Load<Texture2D>("Intro/moon");
-        Color red = new Color(1f, 0.45f, 0.4f);
+        Texture P(int k) => Resources.Load<Texture2D>("Intro/story-" + k); // Composed scenes (NASA EPIC Earth, NASA LRO Moon)
         pages = new[]
         {
-            new Page { picture = earth, tint = Color.white, title = "Day 1 · Launch",
+            new Page { picture = P(1), tint = Color.white, title = "Day 1 · Launch",
                        text = "Our crew of three leaves Earth for a lunar survey. The rocket carries a base module, a rover kit and six months of supplies." },
-            new Page { picture = rocket, tint = Color.white, title = "Day 3 · Lunar orbit",
+            new Page { picture = P(2), tint = Color.white, title = "Day 3 · Lunar orbit",
                        text = "Three quiet days later the Moon fills the windows. We aim for the south pole, where there is ice in the dark craters." },
-            new Page { picture = moon, tint = Color.white, title = "Day 4 · Descent",
+            new Page { picture = P(3), tint = Color.white, title = "Day 4 · Descent",
                        text = "Landing burn. Fifteen kilometres up, the main engine starts to shake. Then the alarms." },
-            new Page { picture = rocket, tint = red, title = "Engine failure",
+            new Page { picture = P(4), tint = Color.white, alarm = true, title = "Engine failure",
                        text = "The engine dies. We come down hard, far from the landing site. Cargo is scattered across the craters." },
-            new Page { picture = hub, tint = Color.white, title = "The crash site",
+            new Page { picture = P(5), tint = Color.white, title = "The crash site",
                        text = "The base module survived. It has air and power - for now. Food, oxygen and parts have to be found." },
-            new Page { picture = rover, tint = Color.white, title = "The way home",
+            new Page { picture = P(6), tint = Color.white, title = "The way home",
                        text = "Salvage the wrecks, grow food, build a rover and repair the ship. Then we fly home." },
         };
 
@@ -71,16 +67,16 @@ public class IntroUI : UIWindow
 
         RectTransform box = Centered("Card", veil, new Vector2(W, H));
         Rounded(box, UITheme.Window, 16);
-        RectTransform stage = Rect("Stage", box, new Vector2(24f, 24f), new Vector2(W - 48f, 380f));
+        RectTransform stage = Rect("Stage", box, new Vector2(24f, 24f), new Vector2(W - 48f, StageH));
         Rounded(stage, new Color(0.02f, 0.02f, 0.03f, 1f), 12);
-        picture = Rect("Picture", stage, new Vector2(20f, 10f), new Vector2(W - 88f, 360f)).gameObject.AddComponent<RawImage>();
+        picture = Rect("Picture", stage, Vector2.zero, new Vector2(W - 48f, StageH)).gameObject.AddComponent<RawImage>();
         picture.raycastTarget = false;
         warning = Picture(Rect("Warning", stage, new Vector2(W - 48f - 76f, 16f), new Vector2(56f, 56f)), UITheme.Icon("wreck"));
         warning.color = UITheme.Bad;
 
-        title = Text(Rect("Title", box, new Vector2(40f, 414f), new Vector2(W - 80f, 34f)), "", 26f, true, TextAlignmentOptions.Center);
+        title = Text(Rect("Title", box, new Vector2(40f, StageH + 40f), new Vector2(W - 80f, 34f)), "", 26f, true, TextAlignmentOptions.Center);
         title.color = UITheme.Accent;
-        line = Text(Rect("Line", box, new Vector2(50f, 452f), new Vector2(W - 100f, 60f)), "", 19f, false, TextAlignmentOptions.Top);
+        line = Text(Rect("Line", box, new Vector2(50f, StageH + 78f), new Vector2(W - 100f, 60f)), "", 19f, false, TextAlignmentOptions.Top);
         line.textWrappingMode = TextWrappingModes.Normal;
 
         dots = new Image[pages.Length];
@@ -105,15 +101,7 @@ public class IntroUI : UIWindow
         picture.texture = p.picture;
         picture.color = p.tint;
         picture.enabled = p.picture != null;
-        // Keep the picture's shape inside the stage
-        if (p.picture != null)
-        {
-            float maxW = W - 88f, maxH = 360f, aspect = p.picture.width / (float)p.picture.height;
-            float w = Mathf.Min(maxW, maxH * aspect), h = w / aspect;
-            picture.rectTransform.sizeDelta = new Vector2(w, h);
-            picture.rectTransform.anchoredPosition = new Vector2(20f + (maxW - w) / 2f, -10f - (maxH - h) / 2f);
-        }
-        warning.enabled = p.tint != Color.white;
+        warning.enabled = p.alarm;
         title.text = p.title;
         line.text = p.text;
         for (int i = 0; i < dots.Length; i++) dots[i].color = i == page ? UITheme.Accent : new Color(1f, 1f, 1f, 0.2f);

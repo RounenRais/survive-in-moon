@@ -169,13 +169,24 @@ public class SurvivalStats : MonoBehaviour
         }
         else Stamina = Mathf.Min(100f, Stamina + staminaRegen * dt);
 
-        // Radiation dose
-        if (InLifeSupport) Radiation = Mathf.Max(0f, Radiation - baseDoseRecovery * dt);
+        // Radiation dose. The base's walls only take the edge off a solar storm; regolith shielding stops most of it.
+        float storm = SolarStorms.Strength;
+        float shelter = RadiationShield.Active ? 0.03f : 0.35f;
+        float exposure; // Multiples of the calm open-surface dose, for the mission log (real mSv)
+        if (InLifeSupport)
+        {
+            if (storm > 0.01f) Radiation = Mathf.Min(100f, Radiation + stormDose * storm * shelter * dt);
+            else Radiation = Mathf.Max(0f, Radiation - baseDoseRecovery * dt);
+            exposure = 0.3f + NasaData.StormMultiplier * storm * shelter;
+        }
         else
         {
-            float dose = cosmicDose + stormDose * SolarStorms.Strength;
+            float cabin = driving ? 0.7f : 1f;
+            float dose = (cosmicDose + stormDose * storm) * cabin;
             Radiation = Mathf.Min(100f, Radiation + dose * (1f - bonusRadiation) * dt);
+            exposure = (1f + NasaData.StormMultiplier * storm) * cabin * (1f - bonusRadiation);
         }
+        MissionLog.Tick(dt, exposure);
 
         // Health
         float damage = 0f;
@@ -221,6 +232,10 @@ public class SurvivalStats : MonoBehaviour
 
     void Warnings()
     {
+        if (!InLifeSupport)
+            ScienceCards.Show("outside");
+        if (Radiation > 50f)
+            ScienceCards.Show("dose");
         Warn(Stat.Oxygen, Oxygen / OxygenCapacity < 0.25f, "Oxygen low - head back to the base");
         Warn(Stat.Food, Food < 20f, "You are hungry");
         Warn(Stat.Water, Water < 20f, "You are thirsty");
@@ -239,6 +254,7 @@ public class SurvivalStats : MonoBehaviour
     void Die()
     {
         IsDead = true;
+        MissionLog.Deaths++;
         if (movement != null && movement.InVehicle && movement.Vehicle != null) movement.Vehicle.Exit();
         BlackedOut?.Invoke();
         DeathUI.Show();

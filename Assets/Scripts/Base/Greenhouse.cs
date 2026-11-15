@@ -49,6 +49,9 @@ public class Greenhouse : MonoBehaviour, IInteractable
         int leftFast = fastCrop != null ? actor.Inventory.TryAddItem(fastCrop, fast) : 0;
         int leftSlow = slowCrop != null ? actor.Inventory.TryAddItem(slowCrop, slow) : 0;
         int taken = fast - leftFast + slow - leftSlow;
+        MissionLog.CropsHarvested += taken;
+        if (taken > 0)
+            ScienceCards.Show("harvest");
         fast = leftFast;
         slow = leftSlow;
         actor.ShowMessage(taken > 0 ? $"Harvested {taken} crops" : "Inventory full");
