@@ -171,6 +171,24 @@ public static class ClaudeBridge
                 if (!m.isPlayer) { m.MoveTo(to); n++; }
             return $"{n} crew walking to {to}";
         }
+        if (cmd.StartsWith("record ")) // record <shot> <seconds> <folder>   (play mode)
+        {
+            string[] p = cmd.Split(new[] { ' ' }, 4);
+            CinematicRecorder.Begin(p[1], float.Parse(p[2], System.Globalization.CultureInfo.InvariantCulture), p[3]);
+            return "recording " + p[1];
+        }
+        if (cmd == "recstatus") return $"busy={CinematicRecorder.Busy} frames={CinematicRecorder.FramesWritten}";
+        if (cmd.StartsWith("hud ")) // hud on|off: hide the screen-space UI for clean screenshots
+        {
+            foreach (Canvas cv in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                if (cv.renderMode == RenderMode.ScreenSpaceOverlay) cv.enabled = cmd == "hud on";
+            return cmd;
+        }
+        if (cmd.StartsWith("shotx ")) // shotx <path>: 2x supersampled game view screenshot
+        {
+            ScreenCapture.CaptureScreenshot(System.IO.Path.GetFullPath(cmd.Substring(6)), 2);
+            return "capturing";
+        }
         if (cmd == "kill") { SurvivalStats.Player?.Hurt(1000f); return "hurt"; }
         if (cmd == "stats")
         {
