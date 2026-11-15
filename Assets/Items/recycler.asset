@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f5337dc5c10f54d80c0564d98f212c, type: 3}
+  m_Name: recycler
+  m_EditorClassIdentifier: 
+  id: recycler
+  displayName: Water Recycler
+  icon: {fileID: 21300000, guid: 6c9a1a437dab00143b141b2392b48c79, type: 3}
+  description: Recovers water from the suit. Food and water last 35% longer.
+  maxStackSize: 1
+  category: 6
+  worldPrefab: {fileID: 1536712586015195933, guid: cd129088e9d131a47a3f199426492437, type: 3}
+  restoreFood: 0
+  restoreWater: 0
+  restoreOxygen: 0
+  restoreHealth: 0
+  restoreStamina: 0
+  reduceRadiation: 0
+  boost: 0
+  boostSeconds: 0
+  oxygenCapacity: 0
+  coldResistance: 0
+  radiationResistance: 0
+  moveSpeed: 0
+  efficiency: 0.35

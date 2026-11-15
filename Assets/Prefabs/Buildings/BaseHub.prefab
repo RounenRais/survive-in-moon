@@ -2332,6 +2332,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8537818212491780164}
   - component: {fileID: 8778254636105471355}
+  - component: {fileID: 7564361026734189555}
   m_Layer: 0
   m_Name: BaseHub
   m_TagString: Untagged
@@ -2387,6 +2388,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c877c01f52478f4c920d999b702d308, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7564361026734189555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8992132330253641943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17680a3c376c02448ae5473eebfb9004, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  kilowatts: 6
 --- !u!1 &9209365597375903305
 GameObject:
   m_ObjectHideFlags: 0

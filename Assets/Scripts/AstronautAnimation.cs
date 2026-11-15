@@ -26,6 +26,8 @@ public class AstronautAnimation : MonoBehaviour
 
     [Header("Moon Feel")]
     public float groundAnimationSpeed = 0.8f; // Animations are a bit slow-motion on the ground
+    [Tooltip("Player: leg tempo per unit of speed (1 = walk speed). Higher = quicker steps when sprinting.")]
+    public float walkTempo = 1.25f;
     public float airAnimationSpeed = 0.45f;
 
     [Header("In The Air")]
@@ -262,7 +264,11 @@ public class AstronautAnimation : MonoBehaviour
         float l = Mathf.SmoothStep(0f, 1f, landWeight);
 
         if (animator != null)
-            animator.speed = Mathf.Lerp(groundAnimationSpeed, airAnimationSpeed, h);
+        {
+            // On the ground the legs keep up with the real speed (walking vs. sprinting), never slower than normal
+            float ground = groundAnimationSpeed * Mathf.Max(1f, movement.AnimationTempo * walkTempo);
+            animator.speed = Mathf.Lerp(ground, airAnimationSpeed, h);
+        }
 
         // Positive angle around the right axis: body leans forward, arm/leg goes back
         Vector3 right = modelFacesBackward ? -transform.right : transform.right;

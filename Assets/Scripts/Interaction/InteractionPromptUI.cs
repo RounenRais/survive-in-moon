@@ -40,7 +40,7 @@ public class InteractionPromptUI : MonoBehaviour
     {
         if (keyStyle == null) MakeStyles();
 
-        if (!string.IsNullOrEmpty(prompt) && Camera.main != null)
+        if (!InteractionSystem.MenuOpen && !string.IsNullOrEmpty(prompt) && Camera.main != null)
         {
             Vector3 screen = Camera.main.WorldToScreenPoint(system.TargetPoint);
             if (screen.z > 0f)

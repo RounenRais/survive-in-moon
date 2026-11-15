@@ -11,6 +11,17 @@ public class BaseArea : MonoBehaviour
     public Color highlightColor = new Color(1f, 0.68f, 0.32f, 0.85f);
     public float borderWidth = 1f;
 
+    // The base (life support, respawn point). The first one in the scene.
+    public static BaseArea Main
+    {
+        get
+        {
+            if (main == null) main = FindFirstObjectByType<BaseArea>();
+            return main;
+        }
+    }
+    private static BaseArea main;
+
     private LineRenderer border;
     private Material borderMaterial;
 

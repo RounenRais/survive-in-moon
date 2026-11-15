@@ -20,7 +20,7 @@ public class CameraOrbit : MonoBehaviour
     public KeyCode resetKey = KeyCode.R;
 
     [Header("Angles")]
-    public float minPitch = -5f; // Looking slightly up from below
+    public float minPitch = -20f; // Looking up from below (far enough to see the Earth in the sky)
     public float maxPitch = 75f; // Looking almost straight down
 
     [Header("Zoom")]
@@ -104,6 +104,15 @@ public class CameraOrbit : MonoBehaviour
 
     void ReadInput()
     {
+        if (InteractionSystem.MenuOpen)
+        {
+            // Camera stays still while a menu is open, and the mouse must be free (the right button may have
+            // been released while the menu was open, so its "up" event never reached us)
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            return;
+        }
+
         // Mouse look
         bool looking = !holdRightMouseToLook || Input.GetMouseButton(1);
         if (looking)

@@ -75,7 +75,7 @@ public static class InventoryUIBuilder
     {
         RectTransform slot = NewUI("InventorySlot", null);
         slot.sizeDelta = new Vector2(Cell, Cell);
-        Image background = AddImage(slot, Color.white);
+        Image background = AddImage(slot, Color.white, skin: UITheme.Skin.Card);
 
         RectTransform iconRect = NewUI("Icon", slot);
         Stretch(iconRect, 8f);
@@ -130,35 +130,20 @@ public static class InventoryUIBuilder
 
         RectTransform window = NewUI("Window", root);
         window.sizeDelta = new Vector2(Padding * 2f + CharacterWidth + Gap + gridWidth, Header + gridHeight + Padding);
-        AddImage(window, WindowColor);
+        AddImage(window, WindowColor, skin: UITheme.Skin.Window);
 
-        RectTransform accent = NewUI("Accent", window); // Thin colored line on top of the window
-        accent.anchorMin = new Vector2(0f, 1f);
-        accent.anchorMax = Vector2.one;
-        accent.pivot = new Vector2(0.5f, 1f);
-        accent.offsetMin = new Vector2(Padding, -3f);
-        accent.offsetMax = new Vector2(-Padding, 0f);
-        AddImage(accent, AccentColor, sliced: false).raycastTarget = false;
 
         RectTransform title = NewUI("Title", window);
         TopBar(title);
-        TMP_Text titleText = AddText(title, "INVENTORY", 24f, FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
-        titleText.characterSpacing = 8f;
-
-        RectTransform divider = NewUI("Divider", window);
-        divider.anchorMin = new Vector2(0f, 1f);
-        divider.anchorMax = Vector2.one;
-        divider.pivot = new Vector2(0.5f, 1f);
-        divider.offsetMin = new Vector2(Padding, -Header + 11f);
-        divider.offsetMax = new Vector2(-Padding, -Header + 12f);
-        AddImage(divider, LineColor, sliced: false).raycastTarget = false;
+        TMP_Text titleText = AddText(title, "Inventory", 24f, FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
+        titleText.characterSpacing = 1f;
 
         // Left: the astronaut, with a (still empty) column at the bottom for status bars later (oxygen, hunger, ...)
         RectTransform character = NewUI("Character", window);
         character.anchorMin = character.anchorMax = character.pivot = new Vector2(0f, 1f);
         character.anchoredPosition = new Vector2(Padding, -Header);
         character.sizeDelta = new Vector2(CharacterWidth, gridHeight);
-        AddImage(character, PanelColor).raycastTarget = false;
+        AddImage(character, PanelColor, skin: UITheme.Skin.Well).raycastTarget = false;
 
         RectTransform view = NewUI("CharacterView", character);
         Stretch(view, 4f);
@@ -225,7 +210,7 @@ public static class InventoryUIBuilder
         tooltip.anchorMin = tooltip.anchorMax = Vector2.zero;
         tooltip.pivot = new Vector2(0f, 1f); // Top-left corner sits at the pointer
         tooltip.sizeDelta = new Vector2(320f, 0f);
-        AddImage(tooltip, TooltipColor).raycastTarget = false;
+        AddImage(tooltip, TooltipColor, skin: UITheme.Skin.Panel).raycastTarget = false;
 
         VerticalLayoutGroup layout = tooltip.gameObject.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(14, 14, 10, 12);
@@ -238,7 +223,7 @@ public static class InventoryUIBuilder
 
         TMP_Text nameText = AddText(NewUI("Name", tooltip), "", 22f, FontStyles.Bold, TextAlignmentOptions.TopLeft);
         TMP_Text category = AddText(NewUI("Category", tooltip), "", 14f, FontStyles.Bold, TextAlignmentOptions.TopLeft);
-        category.characterSpacing = 4f;
+        category.characterSpacing = 1f;
         TMP_Text description = AddText(NewUI("Description", tooltip), "", 17f, FontStyles.Normal, TextAlignmentOptions.TopLeft);
         description.color = UITheme.TextDim;
 
@@ -279,12 +264,13 @@ public static class InventoryUIBuilder
         rect.offsetMax = new Vector2(-inset, -inset);
     }
 
-    static Image AddImage(RectTransform rect, Color color, bool sliced = true)
+    // sliced = a Kenney sci-fi panel (UITheme.SkinSprite) tinted with the color; otherwise a plain colored box
+    static Image AddImage(RectTransform rect, Color color, bool sliced = true, UITheme.Skin skin = UITheme.Skin.Panel)
     {
         Image image = rect.gameObject.AddComponent<Image>();
         if (sliced)
         {
-            image.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            image.sprite = UITheme.SkinSprite(skin);
             image.type = Image.Type.Sliced;
         }
         image.color = color;

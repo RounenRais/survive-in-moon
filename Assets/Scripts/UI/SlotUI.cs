@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 // One inventory slot on screen: icon + amount. Only redraws when its own slot changes.
 // Dragging, dropping and hovering are passed on to InventoryUI / Inventory; the rules live in Inventory.
-public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
+public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
                       IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     public Image background;
@@ -13,8 +13,8 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
     public TMP_Text quantityText;
     public Image categoryBar; // Thin line in the item's category color (optional)
     public Color emptyColor = new Color(1f, 1f, 1f, 0.05f);
-    public Color filledColor = new Color(1f, 1f, 1f, 0.11f);
-    public Color hoverColor = new Color(1f, 1f, 1f, 0.24f);
+    public Color filledColor = new Color(1f, 1f, 1f, 0.1f);
+    public Color hoverColor = new Color(1f, 1f, 1f, 0.18f);
     [Range(0f, 1f)] public float draggedIconAlpha = 0.35f; // The source icon while its copy is being dragged
 
     public int Index { get; private set; }
@@ -104,6 +104,14 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
         hovered = false;
         UpdateBackground();
         owner.Tooltip.Hide();
+    }
+
+    // Right click: use a consumable (eat, drink, breathe, boost)
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right || Slot.IsEmpty || !Slot.item.IsConsumable) return;
+        SurvivalStats stats = SurvivalStats.Player;
+        if (stats != null && stats.Consume(Slot.item)) inventory.RemoveFromSlot(Index, 1);
     }
 
     // --------------------------------------------------------------- Drag & drop

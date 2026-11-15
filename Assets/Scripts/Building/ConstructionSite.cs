@@ -63,7 +63,11 @@ public class ConstructionSite : MonoBehaviour, IInteractable
         if (!working) return;
         if (Builder.isPlayer) FacePlayerToSite();
 
-        Progress = Mathf.Min(1f, Progress + Time.deltaTime / Buildable.buildTime);
+        // A hungry/thirsty crew works slower (the player builds at full speed)
+        CrewNeeds needs = Builder.isPlayer ? null : Builder.GetComponent<CrewNeeds>();
+        float rate = needs != null ? needs.WorkRate : 1f;
+        float seconds = Mathf.Min(Buildable.buildTime, 5f); // Presentation build: everything goes up in 5 seconds
+        Progress = Mathf.Min(1f, Progress + Time.deltaTime * rate / seconds);
         UpdateVisual();
         if (IsComplete) Finish();
     }

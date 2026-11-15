@@ -129,6 +129,16 @@ public class Inventory : MonoBehaviour
 
     public bool IsValidIndex(int index) => index >= 0 && index < slots.Length;
 
+    // Takes items out of one particular slot (e.g. using a consumable from it). False if there aren't enough.
+    public bool RemoveFromSlot(int index, int quantity)
+    {
+        if (!IsValidIndex(index) || slots[index].IsEmpty || slots[index].quantity < quantity) return false;
+        slots[index].quantity -= quantity;
+        if (slots[index].quantity <= 0) slots[index].Clear();
+        OnInventoryChanged?.Invoke(index);
+        return true;
+    }
+
     public bool HasItem(ItemDefinition item, int quantity) => CountOf(item) >= quantity;
 
     public int CountOf(ItemDefinition item)

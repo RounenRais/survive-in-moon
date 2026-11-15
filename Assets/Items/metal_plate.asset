@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f5337dc5c10f54d80c0564d98f212c, type: 3}
+  m_Name: metal_plate
+  m_EditorClassIdentifier: 
+  id: metal_plate
+  displayName: Metal Plate
+  icon: {fileID: 21300000, guid: 02831c7d9efea9b42ac985b8e715326b, type: 3}
+  description: Smelted iron-titanium sheet. The backbone of everything you build.
+  maxStackSize: 30
+  category: 2
+  worldPrefab: {fileID: 3353525662081045261, guid: 6a1e4164a99afc94ebba85f0d15583e1, type: 3}
+  restoreFood: 0
+  restoreWater: 0
+  restoreOxygen: 0
+  restoreHealth: 0
+  restoreStamina: 0
+  reduceRadiation: 0
+  boost: 0
+  boostSeconds: 0
+  oxygenCapacity: 0
+  coldResistance: 0
+  radiationResistance: 0
+  moveSpeed: 0
+  efficiency: 0

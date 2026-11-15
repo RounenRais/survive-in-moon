@@ -28,13 +28,36 @@ public class ItemTooltip : MonoBehaviour
             categoryText.text = ItemCategoryStyle.Name(item.category);
             categoryText.color = ItemCategoryStyle.Color(item.category);
         }
-        descriptionText.text = item.description;
+        descriptionText.text = item.description + Effects(item);
         descriptionText.gameObject.SetActive(!string.IsNullOrEmpty(item.description));
         gameObject.SetActive(true);
         Follow(Input.mousePosition);
     }
 
     public void Hide() => gameObject.SetActive(false);
+
+    // What the item does, in one short line under the description
+    static string Effects(ItemDefinition item)
+    {
+        var parts = new System.Collections.Generic.List<string>();
+        if (item.restoreFood > 0f) parts.Add($"+{item.restoreFood:0} food");
+        if (item.restoreWater > 0f) parts.Add($"+{item.restoreWater:0} water");
+        if (item.restoreOxygen > 0f) parts.Add($"+{item.restoreOxygen:0} oxygen");
+        if (item.restoreHealth > 0f) parts.Add($"+{item.restoreHealth:0} health");
+        if (item.restoreStamina > 0f) parts.Add($"+{item.restoreStamina:0} stamina");
+        if (item.reduceRadiation > 0f) parts.Add($"-{item.reduceRadiation:0}% radiation");
+        if (item.boostSeconds > 0f && item.boost != BoostType.None) parts.Add($"{item.boost} boost {item.boostSeconds / 60f:0.#} min");
+        if (item.oxygenCapacity > 0f) parts.Add($"+{item.oxygenCapacity * 100f:0}% oxygen capacity");
+        if (item.coldResistance > 0f) parts.Add($"{item.coldResistance * 100f:0}% less cold");
+        if (item.radiationResistance > 0f) parts.Add($"{item.radiationResistance * 100f:0}% less radiation");
+        if (item.moveSpeed > 0f) parts.Add($"+{item.moveSpeed * 100f:0}% speed");
+        if (item.efficiency > 0f) parts.Add($"food & water last {item.efficiency * 100f:0}% longer");
+        if (parts.Count == 0) return "";
+        string line = string.Join(" · ", parts);
+        if (item.IsConsumable) line += "\n<color=#9a9ca3>Right click to use</color>";
+        else if (item.category == ItemCategory.Equipment) line += "\n<color=#9a9ca3>Works while carried</color>";
+        return "\n\n" + line;
+    }
 
     void Update() => Follow(Input.mousePosition);
 

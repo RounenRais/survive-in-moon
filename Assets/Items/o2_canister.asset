@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f5337dc5c10f54d80c0564d98f212c, type: 3}
+  m_Name: o2_canister
+  m_EditorClassIdentifier: 
+  id: o2_canister
+  displayName: Oxygen Canister
+  icon: {fileID: 21300000, guid: 67703ccaf0a45314cab25911b619ac92, type: 3}
+  description: Oxygen split from ice by electrolysis. Refills your suit anywhere.
+  maxStackSize: 10
+  category: 5
+  worldPrefab: {fileID: 4796459407758064604, guid: 408a62c3639d75347bcca4d3d2e220a1, type: 3}
+  restoreFood: 0
+  restoreWater: 0
+  restoreOxygen: 50
+  restoreHealth: 0
+  restoreStamina: 0
+  reduceRadiation: 0
+  boost: 0
+  boostSeconds: 0
+  oxygenCapacity: 0
+  coldResistance: 0
+  radiationResistance: 0
+  moveSpeed: 0
+  efficiency: 0

@@ -36,6 +36,13 @@ public class InteractionSystem : MonoBehaviour
     public IInteractable CurrentTarget { get; private set; }
     public bool IsBusy => active != null;
 
+    // True while a full-screen menu (inventory, crew, build) is open. The world "[F]" prompt and the F key are
+    // paused then, so the prompt can't show on top of an open panel and F can't reach the world behind it.
+    public static bool MenuOpen =>
+        (InventoryUI.Instance != null && InventoryUI.Instance.IsOpen) || CrewUI.IsOpen || BuildMenuUI.IsOpen ||
+        CraftingUI.IsOpen || MapUI.IsOpen || GameOverUI.IsOpen || DeathUI.IsOpen ||
+        IntroUI.IsOpen || CrateUI.IsOpen || PauseUI.IsOpen;
+
     // Top of the target, for a floating prompt
     public Vector3 TargetPoint => targetCollider != null
         ? targetCollider.bounds.center + Vector3.up * targetCollider.bounds.extents.y
@@ -123,6 +130,13 @@ public class InteractionSystem : MonoBehaviour
         {
             lastVehicleFrame = Time.frameCount;
             CancelActive();
+            SetTarget(null, null);
+            return;
+        }
+
+        // A full-screen menu is open: hide the world prompt and ignore F until it closes
+        if (MenuOpen)
+        {
             SetTarget(null, null);
             return;
         }

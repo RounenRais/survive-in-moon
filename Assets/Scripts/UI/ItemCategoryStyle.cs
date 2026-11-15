@@ -11,6 +11,9 @@ public static class ItemCategoryStyle
             case ItemCategory.RareResource: return "Rare Resource";
             case ItemCategory.TechComponent: return "Tech Component";
             case ItemCategory.Tool: return "Tool";
+            case ItemCategory.Consumable: return "Consumable";
+            case ItemCategory.Equipment: return "Equipment";
+            case ItemCategory.ShipPart: return "Ship Part";
             default: return "Other";
         }
     }
@@ -23,6 +26,9 @@ public static class ItemCategoryStyle
             case ItemCategory.RareResource: return new Color(0.35f, 0.8f, 1f);
             case ItemCategory.TechComponent: return new Color(0.4f, 0.9f, 0.5f);
             case ItemCategory.Tool: return new Color(1f, 0.65f, 0.2f);
+            case ItemCategory.Consumable: return new Color(0.95f, 0.45f, 0.5f);
+            case ItemCategory.Equipment: return new Color(0.7f, 0.55f, 1f);
+            case ItemCategory.ShipPart: return new Color(1f, 0.85f, 0.35f);
             default: return new Color(0.85f, 0.85f, 0.85f);
         }
     }

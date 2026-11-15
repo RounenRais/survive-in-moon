@@ -15,11 +15,15 @@ public class InventoryUI : MonoBehaviour
     public KeyCode toggleKey = KeyCode.Tab;
     public bool startOpen;
 
+    public static InventoryUI Instance { get; private set; }
     public ItemTooltip Tooltip => tooltip;
     public bool IsOpen => window.activeSelf;
     public bool IsDragging => dragSource != null;
 
     private SlotUI dragSource;
+
+    void Awake() => Instance = this;
+    void OnDestroy() { if (Instance == this) Instance = null; }
 
     void Start()
     {

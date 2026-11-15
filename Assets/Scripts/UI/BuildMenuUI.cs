@@ -137,7 +137,7 @@ public class BuildMenuUI : UIWindow
         else if (selectedBuilder == null) problem = "Choose who builds it";
         else if (selectedBuilder.IsBusy) problem = $"{selectedBuilder.displayName} is busy";
         placeButton.interactable = problem == null;
-        placeHint.text = problem ?? (selectedBuilder.isPlayer ? "You will build it yourself" : $"{selectedBuilder.displayName} will build it");
+        placeHint.text = problem ?? ""; // Only say something when building is not possible
         placeHint.color = problem == null ? UITheme.TextDim : UITheme.Bad;
     }
 
@@ -198,19 +198,20 @@ public class BuildMenuUI : UIWindow
         Clear(grid);
         tiles.Clear();
         if (BuildManager.Instance == null) return;
-        const float gap = 12f, tileHeight = 176f;
+        const float gap = 10f, tileHeight = 140f; // 4 rows fit the catalog panel
         float tileWidth = (GridWidth - Pad * 2f + 16f - gap) / 2f;
         foreach (BuildableDefinition buildable in BuildManager.Instance.catalog)
         {
             if (buildable == null) continue;
+            if (buildable.id == "RoverGarage" && !Progress.RoverUnlocked) continue; // Found at the cargo pod wreck
             int column = tiles.Count % 2, row = tiles.Count / 2;
             Button button = Button(grid, new Vector2(column * (tileWidth + gap), row * (tileHeight + gap)), new Vector2(tileWidth, tileHeight),
                                    UITheme.Card, () => { selected = buildable; Refresh(); });
             var tile = new Tile { buildable = buildable, background = button.GetComponent<Image>() };
 
-            RectTransform well = Rect("Picture", button.transform, new Vector2(8f, 8f), new Vector2(tileWidth - 16f, 110f));
+            RectTransform well = Rect("Picture", button.transform, new Vector2(8f, 8f), new Vector2(tileWidth - 16f, 78f));
             Rounded(well, UITheme.Well, 12);
-            Picture(Rect("Icon", well, new Vector2(8f, 6f), new Vector2(tileWidth - 32f, 98f)), buildable.icon);
+            Picture(Rect("Icon", well, new Vector2(8f, 4f), new Vector2(tileWidth - 32f, 70f)), buildable.icon);
             if (buildable.IsFree)
             {
                 RectTransform badge = Rect("Free", well, new Vector2(tileWidth - 16f - 58f, 8f), new Vector2(50f, 22f));
@@ -218,17 +219,17 @@ public class BuildMenuUI : UIWindow
                 Text(Rect("Label", badge, Vector2.zero, new Vector2(50f, 22f)), "FREE", 11f, true, TextAlignmentOptions.Center).color = UITheme.OnAccent;
             }
 
-            Text(Rect("Name", button.transform, new Vector2(12f, 122f), new Vector2(tileWidth - 24f, 26f)), buildable.displayName, 17f, true, TextAlignmentOptions.MidlineLeft);
+            Text(Rect("Name", button.transform, new Vector2(12f, 90f), new Vector2(tileWidth - 24f, 24f)), buildable.displayName, 16f, true, TextAlignmentOptions.MidlineLeft);
             // Cost as small item pictures with the amount next to each
             if (buildable.IsFree)
-                Text(Rect("Cost", button.transform, new Vector2(12f, 148f), new Vector2(tileWidth - 24f, 22f)), "No materials", 13f, false, TextAlignmentOptions.MidlineLeft)
+                Text(Rect("Cost", button.transform, new Vector2(12f, 114f), new Vector2(tileWidth - 24f, 22f)), "No materials", 13f, false, TextAlignmentOptions.MidlineLeft)
                     .color = UITheme.Good;
             foreach (ItemAmount part in buildable.cost)
             {
                 if (part.item == null) continue;
-                float x = 12f + tile.parts.Count * 56f;
-                Picture(Rect("Icon", button.transform, new Vector2(x, 149f), new Vector2(20f, 20f)), part.item.icon);
-                TMP_Text count = Text(Rect("Count", button.transform, new Vector2(x + 23f, 145f), new Vector2(30f, 28f)), part.quantity.ToString(), 14f, true, TextAlignmentOptions.MidlineLeft);
+                float x = 12f + tile.parts.Count * 50f;
+                Picture(Rect("Icon", button.transform, new Vector2(x, 116f), new Vector2(18f, 18f)), part.item.icon);
+                TMP_Text count = Text(Rect("Count", button.transform, new Vector2(x + 20f, 112f), new Vector2(28f, 26f)), part.quantity.ToString(), 13f, true, TextAlignmentOptions.MidlineLeft);
                 tile.parts.Add((part, count));
             }
             tile.frame = Frame(button.GetComponent<RectTransform>(), tileWidth, tileHeight);
@@ -275,7 +276,7 @@ public class BuildMenuUI : UIWindow
         float top = 110f, columnHeight = Height - top - 32f;
         RectTransform left = Rect("Catalog", box, new Vector2(32f, top), new Vector2(GridWidth, columnHeight));
         Rounded(left, UITheme.Panel, 18);
-        Section(left, "STRUCTURES", Pad, 20f);
+        Section(left, "Structures", Pad, 20f);
         grid = Rect("Grid", left, new Vector2(Pad - 8f, 52f), new Vector2(GridWidth - Pad * 2f + 16f, columnHeight - 64f));
 
         // Right: the chosen building
@@ -294,14 +295,13 @@ public class BuildMenuUI : UIWindow
         Text(Rect("Label", timeChip, new Vector2(16f, 0f), new Vector2(90f, 40f)), "Build time", 14f, false, TextAlignmentOptions.MidlineLeft).color = UITheme.TextDim;
         detailTime = Text(Rect("Value", timeChip, new Vector2(104f, 0f), new Vector2(72f, 40f)), "", 19f, true, TextAlignmentOptions.MidlineRight);
 
-        Section(right, "MATERIALS", Pad, 222f);
+        Section(right, "Materials", Pad, 222f);
         costs = Rect("Materials", right, new Vector2(Pad, 250f), new Vector2(Inner, 64f));
-        Section(right, "ASSIGN TO", Pad, 336f);
+        Section(right, "Assign to", Pad, 336f);
         builders = Rect("Crew", right, new Vector2(Pad, 364f), new Vector2(Inner, 236f));
 
         // Bottom: hint + Place
         float bottom = columnHeight - Pad - 56f;
-        Image(Rect("Divider", right, new Vector2(Pad, bottom - 18f), new Vector2(Inner, 1f)), UITheme.Line);
         placeHint = Text(Rect("Hint", right, new Vector2(Pad, bottom), new Vector2(Inner - 250f, 56f)), "", 17f, false, TextAlignmentOptions.MidlineLeft);
         placeButton = LabelButton(right, new Vector2(DetailWidth - Pad - 220f, bottom), new Vector2(220f, 56f), UITheme.Accent, UITheme.OnAccent, "Place", 22f, Place);
 

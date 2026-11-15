@@ -172,8 +172,6 @@ public class CrewUI : UIWindow
             Rounded(dot, UITheme.Window, 7);
             Rounded(Rect("Fill", dot, new Vector2(2f, 2f), new Vector2(10f, 10f)), StatusColor(member), 5);
         }
-        TMP_Text hint = Text(Rect("Hint", bar, new Vector2(0f, 120f - 18f), new Vector2(300f, 18f)), $"{toggleKey}  Crew", 13f, true, TextAlignmentOptions.MidlineLeft);
-        hint.color = UITheme.TextDim;
     }
 
     void BuildCards(IReadOnlyList<CrewMember> crew)

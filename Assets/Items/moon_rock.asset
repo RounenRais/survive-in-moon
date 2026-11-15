@@ -13,9 +13,22 @@ MonoBehaviour:
   m_Name: moon_rock
   m_EditorClassIdentifier: 
   id: moon_rock
-  displayName: Moon Rock
+  displayName: Regolith Rock
   icon: {fileID: 21300000, guid: a5c00a9113ff23b45a54f849bf9d3844, type: 3}
-  description: Common regolith rock. Basic building material.
+  description: Loose lunar rock. Melted down it makes glass; packed, it builds walls.
   maxStackSize: 50
   category: 0
   worldPrefab: {fileID: 6774210130059043270, guid: 92d9b588f2da85e4681b0e10f5ed36ea, type: 3}
+  restoreFood: 0
+  restoreWater: 0
+  restoreOxygen: 0
+  restoreHealth: 0
+  restoreStamina: 0
+  reduceRadiation: 0
+  boost: 0
+  boostSeconds: 0
+  oxygenCapacity: 0
+  coldResistance: 0
+  radiationResistance: 0
+  moveSpeed: 0
+  efficiency: 0

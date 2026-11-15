@@ -41,7 +41,17 @@ public class MoonRover : MonoBehaviour
     public float enterDistance = 14f;
     public KeyCode interactKey = KeyCode.F;
 
+    [Header("Fuel")]
+    public float fuelMax = 100f;
+    public float fuel = 60f;
+    [Tooltip("Fuel used per 1000 units driven")]
+    public float fuelPer1000 = 25f; // A full tank drives ~4000 units
+    public ItemDefinition fuelItem;   // Fuel cell: getting in with one tops the tank up
+    public float fuelPerItem = 50f;
+
     public PlayerMovement Driver { get; private set; }
+    public float FuelRatio => fuelMax > 0f ? fuel / fuelMax : 0f;
+    public static MoonRover Active => all.Count > 0 ? all[0] : null;
     public float ForwardSpeed { get; private set; }
 
     static readonly List<MoonRover> all = new List<MoonRover>();
@@ -116,6 +126,13 @@ public class MoonRover : MonoBehaviour
 
     public void Enter(PlayerMovement astronaut)
     {
+        // Top up the tank with a fuel cell from the inventory when it is getting low
+        Inventory inventory = astronaut.GetComponent<Inventory>();
+        if (fuelItem != null && inventory != null && fuel < fuelMax - fuelPerItem * 0.5f && inventory.RemoveItem(fuelItem, 1))
+        {
+            fuel = Mathf.Min(fuelMax, fuel + fuelPerItem);
+            GameSystems.Notify($"Refueled with a {fuelItem.displayName}");
+        }
         Driver = astronaut;
         enteredFrame = Time.frameCount;
         astronaut.EnterVehicle(this, driverSeat);
@@ -179,6 +196,7 @@ public class MoonRover : MonoBehaviour
         if (Driver != null)
         {
             throttle = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
+            if (fuel <= 0f) throttle = 0f; // Out of fuel: it only rolls
             float steerInput = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
             steer = Mathf.MoveTowards(steer, steerInput, Time.deltaTime * 3f); // Steering wheel turns smoothly
             handbrake = Input.GetKey(KeyCode.Space);
@@ -200,6 +218,9 @@ public class MoonRover : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Fuel burns with the distance driven
+        if (Driver != null && throttle != 0f)
+            fuel = Mathf.Max(0f, fuel - Mathf.Abs(ForwardSpeed) * Time.fixedDeltaTime * fuelPer1000 / 1000f);
         float dt = Time.fixedDeltaTime;
         rb.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
 

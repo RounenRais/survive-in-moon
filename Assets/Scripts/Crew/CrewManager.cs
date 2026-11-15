@@ -52,6 +52,15 @@ public class CrewManager : MonoBehaviour
         members.Add(member);
     }
 
+    // The player's capsule passes through crew mates: bumping into them stopped a sprint dead
+    static void IgnorePlayer(GameObject crewMate)
+    {
+        var player = FindFirstObjectByType<PlayerMovement>();
+        var cc = player != null ? player.GetComponent<CharacterController>() : null;
+        if (cc == null) return;
+        foreach (Collider c in crewMate.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(cc, c, true);
+    }
+
     void SpawnOthers()
     {
         CharacterDatabase database = CharacterDatabase.Instance;
@@ -71,7 +80,11 @@ public class CrewManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             CharacterDefinition character = pool[i];
-            GameObject astronaut = Instantiate(character.prefab, BaseArea.GroundPoint(HubDoor.position), HubDoor.rotation);
+            // They start outside, in a loose line in front of the hub door, facing out
+            Vector3 outward = Vector3.ProjectOnPlane(HubDoor.forward, Vector3.up).normalized;
+            Vector3 side = Vector3.Cross(Vector3.up, outward);
+            Vector3 spot = HubDoor.position + outward * 48f + side * (i - (count - 1) * 0.5f) * 20f;
+            GameObject astronaut = Instantiate(character.prefab, BaseArea.GroundPoint(spot), HubDoor.rotation);
             astronaut.name = "Crew_" + character.id;
 
             // Moved by script, not by physics: a kinematic body lets its collider move along smoothly
@@ -83,7 +96,8 @@ public class CrewManager : MonoBehaviour
             member.Character = character;
             member.displayName = character.displayName;
             members.Add(member);
-            member.EnterHub(); // Out of sight until they get something to do
+            astronaut.AddComponent<CrewNeeds>(); // Food and oxygen, shown above the head
+            IgnorePlayer(astronaut);
         }
     }
 }

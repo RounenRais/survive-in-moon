@@ -41,6 +41,8 @@ public static class AstronautPrefabBuilder
         AssetDatabase.FindAssets("t:Model", new[] { ModelFolder })
             .Select(AssetDatabase.GUIDToAssetPath)
             .Where(path => path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase))
+            // Only the astronauts themselves: other models in sub folders (props, vehicles) are not characters
+            .Where(path => System.IO.Path.GetDirectoryName(path).Replace('\\', '/') == ModelFolder)
             .ToArray();
 
     static string PrefabPath(string modelPath) =>
@@ -134,6 +136,9 @@ public static class AstronautPrefabBuilder
 
         if (idle == null || walk == null)
             Debug.LogWarning($"Astronaut prefabs: {name} is missing an Idle or Walk clip.", controller);
+        // Mark it changed so SaveAssets really writes the states/blend tree to disk (otherwise an empty
+        // controller can be saved, and the astronaut's legs stop moving)
+        EditorUtility.SetDirty(controller);
         return controller;
     }
 

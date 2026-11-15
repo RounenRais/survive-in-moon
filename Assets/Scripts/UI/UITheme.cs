@@ -1,36 +1,76 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The look shared by all the game's UI: colors, the font (Titillium Web, in Assets/Resources/Fonts)
-// and rounded panel sprites. TextMeshPro texts get the font through the TMP default font asset
-// (set by: Survive In Moon > Apply Game Font); the simple on-screen texts (OnGUI) use GuiFont.
+// The look shared by all the game's UI: colors, the font (Barlow, in Assets/Resources/Fonts) and plain rounded
+// panel sprites. Calm and flat on purpose: dark neutral surfaces, no borders or stripes, one warm accent for the
+// main action. TextMeshPro texts get the font through the TMP default font asset
+// (set by: Survive In Moon > Apply Barlow Font); the simple on-screen texts (OnGUI) use GuiFont.
 public static class UITheme
 {
-    // Neutral graphite surfaces with a warm amber accent (matches the orange markings on the buildings)
-    public static readonly Color Window = new Color(0.085f, 0.087f, 0.094f, 0.98f);
-    public static readonly Color Panel = new Color(0.118f, 0.12f, 0.13f, 1f);
-    public static readonly Color Card = new Color(0.16f, 0.163f, 0.175f, 1f);
-    public static readonly Color CardSelected = new Color(0.24f, 0.2f, 0.15f, 1f);
-    public static readonly Color Well = new Color(0.07f, 0.072f, 0.08f, 1f);
-    public static readonly Color Line = new Color(1f, 1f, 1f, 0.07f);
-    public static readonly Color Accent = new Color(1f, 0.68f, 0.32f);
-    public static readonly Color AccentSoft = new Color(0.33f, 0.25f, 0.16f, 1f);
+    public static readonly Color Window = new Color(0.075f, 0.08f, 0.09f, 0.94f);
+    public static readonly Color Panel = new Color(0.11f, 0.116f, 0.13f, 1f);
+    public static readonly Color Card = new Color(0.145f, 0.152f, 0.168f, 1f);
+    public static readonly Color CardSelected = new Color(0.22f, 0.19f, 0.15f, 1f);
+    public static readonly Color Well = new Color(0.058f, 0.062f, 0.07f, 1f);
+    public static readonly Color Line = new Color(1f, 1f, 1f, 0.06f);
+    public static readonly Color Accent = new Color(0.98f, 0.69f, 0.33f);
+    public static readonly Color AccentSoft = new Color(0.27f, 0.21f, 0.14f, 1f);
     public static readonly Color Text = new Color(0.95f, 0.95f, 0.94f);
-    public static readonly Color TextDim = new Color(0.66f, 0.66f, 0.68f);
-    public static readonly Color Good = new Color(0.56f, 0.88f, 0.6f);
-    public static readonly Color Bad = new Color(1f, 0.5f, 0.45f);
+    public static readonly Color TextDim = new Color(0.6f, 0.61f, 0.64f);
+    public static readonly Color Good = new Color(0.56f, 0.86f, 0.6f);
+    public static readonly Color Bad = new Color(1f, 0.52f, 0.47f);
     public static readonly Color OnAccent = new Color(0.12f, 0.08f, 0.03f);
-    public static readonly Color Strip = new Color(0.085f, 0.087f, 0.094f, 0.82f); // Behind on-screen texts in the world
+    public static readonly Color Strip = new Color(0.075f, 0.08f, 0.09f, 0.85f); // Behind on-screen texts in the world
 
     private static Font guiFont;
     public static Font GuiFont
     {
         get
         {
+            if (guiFont == null) guiFont = Resources.Load<Font>("Fonts/Barlow-SemiBold");
             if (guiFont == null) guiFont = Resources.Load<Font>("Fonts/TitilliumWeb-SemiBold");
             return guiFont;
         }
     }
+
+    // --------------------------------------------------------------- Icons
+
+    private static readonly Dictionary<string, Sprite> icons = new Dictionary<string, Sprite>();
+
+    // A white status icon from Resources/UI/Icons (oxygen, food, water, warmth, stamina, radiation, health,
+    // power, crew, base, rover, ship...). Tint it with Image.color. Null if missing.
+    public static Sprite Icon(string name)
+    {
+        if (icons.TryGetValue(name, out Sprite s) && s != null) return s;
+        s = Resources.Load<Sprite>("UI/Icons/" + name);
+        icons[name] = s;
+        return s;
+    }
+
+    // --------------------------------------------------------------- Surfaces
+
+    public enum Skin
+    {
+        Window, // Big window
+        Panel,  // A section inside a window
+        Card,   // A tile / chip / slot
+        Well,   // A sunken area (photo backgrounds, empty places)
+        Button
+    }
+
+    // Plain rounded rectangle for a kind of surface (tint it with Image.color)
+    public static Sprite SkinSprite(Skin skin) => Rounded(skin switch
+    {
+        Skin.Window => 14,
+        Skin.Panel => 10,
+        Skin.Card => 8,
+        Skin.Well => 8,
+        _ => 8
+    });
+
+    // Which surface a rounded panel (by its old corner radius) becomes
+    public static Skin SkinForRadius(int radius) =>
+        radius >= 22 ? Skin.Window : radius >= 16 ? Skin.Panel : radius >= 13 ? Skin.Card : Skin.Well;
 
     // --------------------------------------------------------------- On-screen hint (call from OnGUI)
 
@@ -50,7 +90,6 @@ public static class UITheme
         const float width = 560f, height = 66f;
         var rect = new Rect((Screen.width - width) / 2f, Screen.height - height - 24f, width, height);
         GUI.DrawTexture(rect, Pixel(Strip));
-        GUI.DrawTexture(new Rect(rect.x, rect.y, width, 2f), Pixel(Accent));
         GUI.Label(new Rect(rect.x, rect.y + 8f, width, 26f), title, hintTitle);
         hintDetail.normal.textColor = detailColor;
         GUI.Label(new Rect(rect.x, rect.y + 34f, width, 22f), detail, hintDetail);

@@ -147,6 +147,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movement: {fileID: 0}
   animator: {fileID: 0}
+  working: 0
+  walking: 0
+  stepLength: 4.5
+  thighSwing: 22
+  kneeBend: 34
+  armSwing: 14
   modelFacesBackward: 0
   groundAnimationSpeed: 0.8
   airAnimationSpeed: 0.45

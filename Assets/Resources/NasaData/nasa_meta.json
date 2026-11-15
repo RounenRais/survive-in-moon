@@ -1,0 +1,60 @@
+{
+    "fetchedAt": "2026-11-15 13:25 UTC",
+    "donkiFlares": 401,
+    "donkiFrom": "2025-11-21",
+    "donkiTo": "2026-11-15",
+    "moonDoseSamples": 217478,
+    "moonDoseMedian": 13.154582977294922,
+    "moonDoseP99": 199.12083435058595,
+    "moonDoseMax": 61829.16796875,
+    "issDoseMedian": 4.943133354187012,
+    "moonDoseFrom": "2009-06-26",
+    "moonDoseTo": "2024-06-18",
+    "studies": [
+        {
+            "accession": "OSD-177",
+            "title": "Draft Genome Sequences of Two Fusarium oxysporum Isolates Cultured from Infected Zinnia hybrida Plants Grown on the International Space Station",
+            "program": "Internation Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-766",
+            "title": "The microbial communities of a tomato crop grown in Veggie under different lighting regimes on the International Space Station",
+            "program": "International Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-412",
+            "title": "Spatial characterization of microbial communities on multi-species leafy greens grown simultaneously in the Veggie vegetable production systems on the International Space Station VEG-03D",
+            "program": "International Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-414",
+            "title": "Spatial characterization of microbial communities on multi-species leafy greens grown simultaneously in the Veggie vegetable production systems on the International Space Station VEG-03F",
+            "program": "International Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-413",
+            "title": "Spatial characterization of microbial communities on multi-species leafy greens grown simultaneously in the Veggie vegetable production systems on the International Space Station VEG-03E",
+            "program": "International Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-615",
+            "title": "Glycome profiling and immunohistochemistry uncover changes in cell walls of Arabidopsis thaliana roots during spaceflight: Advanced Plant EXperiment (APEX) 03-1 Raw Dataset",
+            "program": "International Space Station, NASA Biological and Physical Sciences Program"
+        },
+        {
+            "accession": "OSD-268",
+            "title": "Microbiological and nutritional analysis of lettuce crops grown on the International Space Station-VEG01B",
+            "program": "International Space Station (ISS)"
+        },
+        {
+            "accession": "OSD-269",
+            "title": "Microbiological and nutritional analysis of lettuce crops grown on the International Space Station-VEG03A",
+            "program": "International Space Station (ISS)"
+        }
+    ],
+    "epicImage": "epic_1b_20261113111528",
+    "epicDate": "2026-11-13 11:10:39",
+    "apodDate": "",
+    "apodTitle": "",
+    "apodCredit": ""
+}

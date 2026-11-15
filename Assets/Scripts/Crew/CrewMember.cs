@@ -14,7 +14,8 @@ public enum CrewOrder
 // One astronaut of the base crew (the player is one too, but takes no orders).
 // Crew mates live in the base hub. A job (from the build terminal) or an order (from the crew window, C) brings
 // them out of the hub door; when a job is done they walk back in by themselves.
-// Walking: they turn toward the target first, then walk straight to it (no path finding yet). The legs are
+// Walking: they turn toward the target first, then walk to it. On the way they steer around building
+// footprints (PlacedBuilding) so they don't walk through bases, instead of a full path finder. The legs are
 // animated by AstronautAnimation.walking, the Animator stays on Idle.
 public class CrewMember : MonoBehaviour
 {
@@ -22,7 +23,15 @@ public class CrewMember : MonoBehaviour
     public bool isPlayer;
     public float walkSpeed = 5f;
     public float turnSpeed = 240f;       // Degrees per second
+    private Vector3 steer;               // Smoothed walking direction
+    private float bestDistance = float.MaxValue, stuckTimer, escapeUntil;
+    private Vector3 lastDestination;
+    private int sideBias; // Which way around an obstacle (+1 / -1), kept for the whole trip
     public float followDistance = 26f;   // How far behind the player they keep
+
+    [Header("Avoiding buildings")]
+    public float avoidRadius = 6f;       // How wide a gap to keep around a building's footprint
+    public float avoidLookAhead = 12f;   // How early to start steering around one
 
     public CharacterDefinition Character { get; set; }
     public CrewOrder Order { get; private set; } = CrewOrder.Waiting;
@@ -74,6 +83,7 @@ public class CrewMember : MonoBehaviour
 
     public void MoveTo(Vector3 point)
     {
+        bestDistance = float.MaxValue;
         if (isPlayer || IsBusy) return;
         ComeOut();
         target = point;
@@ -165,19 +175,89 @@ public class CrewMember : MonoBehaviour
     bool Step(Vector3 destination, float stopDistance, ref bool walking)
     {
         Vector3 flat = Vector3.ProjectOnPlane(destination - transform.position, Vector3.up);
-        if (flat.magnitude <= stopDistance) return false;
+        float distance = flat.magnitude;
+        if (distance <= stopDistance) return false;
 
-        // Facing far away from the target: turn on the spot first, instead of walking sideways
-        if (Vector3.Angle(transform.forward, flat) > 45f)
-        {
-            Turn(destination);
-            return true;
-        }
-        Turn(destination);
-        Vector3 move = flat.normalized * Mathf.Min(walkSpeed * Time.deltaTime, flat.magnitude - stopDistance * 0.5f);
+        // A new destination (a follow slot moves all the time) restarts the stuck check
+        if ((destination - lastDestination).sqrMagnitude > 25f) { lastDestination = destination; bestDistance = float.MaxValue; stuckTimer = 0f; sideBias = 0; }
+        // Stuck check: no real progress for a while -> walk straight for a moment (crew can pass through things)
+        if (distance < bestDistance - 1f) { bestDistance = distance; stuckTimer = 0f; }
+        else if ((stuckTimer += Time.deltaTime) > 1.5f) { escapeUntil = Time.time + 2f; stuckTimer = 0f; bestDistance = distance; }
+
+        // Bend the straight line toward the target so we go around any building in the way
+        Vector3 wish = Time.time < escapeUntil ? flat / distance : AvoidBuildings(flat / distance, destination);
+        // Smooth it: the avoidance can flip sides from one frame to the next, which made them shake in place
+        steer = steer.sqrMagnitude < 0.01f ? wish : Vector3.Slerp(steer, wish, 1f - Mathf.Exp(-6f * Time.deltaTime));
+        Vector3 direction = Vector3.ProjectOnPlane(steer, Vector3.up).normalized;
+
+        // Facing the opposite way: turn on the spot first, instead of walking backwards
+        Turn(transform.position + direction);
+        if (Vector3.Angle(transform.forward, direction) > 100f) return true;
+
+        Vector3 move = direction * Mathf.Min(walkSpeed * Time.deltaTime, distance - stopDistance * 0.5f);
         transform.position = BaseArea.GroundPoint(transform.position + move);
         walking = true;
         return true;
+    }
+
+    // Takes the straight-line direction we want to walk and bends it around building footprints, so the crew
+    // walks past bases instead of through them. Local steering: cancel the part of the motion that points into a
+    // building and let the rest slide along its edge, which naturally carries us around the corner.
+    Vector3 AvoidBuildings(Vector3 wishDirection, Vector3 destination)
+    {
+        Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+        Vector2 dir = new Vector2(wishDirection.x, wishDirection.z);
+        Vector2 goal = new Vector2(destination.x, destination.z);
+        if (dir.sqrMagnitude < 0.0001f) return wishDirection;
+
+        foreach (PlacedBuilding building in PlacedBuilding.All)
+        {
+            if (building == null) continue;
+            Footprint f = building.Footprint;
+            float hx = f.half.x + avoidRadius;
+            float hz = f.half.y + avoidRadius;
+
+            // Skip the building that holds our destination (our own site, the hub door...): we must reach it
+            Vector2 toGoal = goal - f.center;
+            if (Mathf.Abs(Vector2.Dot(toGoal, f.axisX)) < hx && Mathf.Abs(Vector2.Dot(toGoal, f.axisZ)) < hz)
+                continue;
+
+            // Where we are in the building's own (x, z) axes
+            Vector2 toCrew = pos - f.center;
+            float lx = Vector2.Dot(toCrew, f.axisX);
+            float lz = Vector2.Dot(toCrew, f.axisZ);
+
+            Vector2 normal; // points from the building out toward us
+            if (Mathf.Abs(lx) < hx && Mathf.Abs(lz) < hz)
+            {
+                // Already inside the padded box: push straight out of the nearest side
+                if (hx - Mathf.Abs(lx) < hz - Mathf.Abs(lz)) normal = f.axisX * Mathf.Sign(lx == 0f ? 1f : lx);
+                else normal = f.axisZ * Mathf.Sign(lz == 0f ? 1f : lz);
+            }
+            else
+            {
+                Vector2 closest = f.center + f.axisX * Mathf.Clamp(lx, -hx, hx) + f.axisZ * Mathf.Clamp(lz, -hz, hz);
+                normal = pos - closest;
+                float gap = normal.magnitude;
+                if (gap > avoidLookAhead) continue; // too far away to matter yet
+                normal /= gap;
+            }
+
+            float into = -Vector2.Dot(dir, normal); // > 0 means we are heading into the building
+            if (into <= 0f) continue;                // walking away already: leave it alone
+
+            dir += normal * into;                    // cancel the part going inward -> slide along the edge
+            if (dir.sqrMagnitude < 0.12f)
+            {
+                // (Nearly) head-on: pick a side once and keep it until the destination changes, otherwise the
+                // choice flips back and forth every frame and they shake on the spot
+                Vector2 tangent = new Vector2(-normal.y, normal.x);
+                if (sideBias == 0) sideBias = Vector2.Dot(tangent, goal - pos) >= 0f ? 1 : -1;
+                dir = tangent * sideBias;
+            }
+            dir.Normalize();
+        }
+        return new Vector3(dir.x, 0f, dir.y);
     }
 
     void Turn(Vector3 point)

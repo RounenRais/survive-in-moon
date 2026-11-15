@@ -21,17 +21,35 @@ public static class GameFontSetup
     const string Characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~·×…";
 
     [MenuItem("Survive In Moon/Apply Game Font")]
-    public static void Apply()
+    public static void Apply() => ApplyFonts("TitilliumWeb-Regular", "TitilliumWeb-SemiBold", "TitilliumWeb-Bold");
+
+    // Barlow (Google Fonts, SIL OFL): a clean, slightly technical grotesk that reads well at every size.
+    [MenuItem("Survive In Moon/Apply Barlow Font")]
+    public static void ApplyBarlow() => ApplyFonts("Barlow-Medium", "Barlow-SemiBold", "Barlow-Bold");
+
+    static void ApplyFonts(string regularName, string semiBoldName, string boldName)
     {
-        TMP_FontAsset regular = FontAsset("TitilliumWeb-Regular");
-        TMP_FontAsset semiBold = FontAsset("TitilliumWeb-SemiBold");
-        TMP_FontAsset bold = FontAsset("TitilliumWeb-Bold");
+        TMP_FontAsset regular = FontAsset(regularName);
+        TMP_FontAsset semiBold = FontAsset(semiBoldName);
+        TMP_FontAsset bold = FontAsset(boldName);
         if (regular == null || bold == null) return;
+
+        // Letters the display font doesn't have (×, …, accents) come from Titillium Web
+        if (regularName != "TitilliumWeb-Regular")
+        {
+            TMP_FontAsset fallback = FontAsset("TitilliumWeb-SemiBold");
+            if (fallback != null)
+            {
+                if (regular.fallbackFontAssetTable == null) regular.fallbackFontAssetTable = new System.Collections.Generic.List<TMP_FontAsset>();
+                if (!regular.fallbackFontAssetTable.Contains(fallback)) regular.fallbackFontAssetTable.Add(fallback);
+                EditorUtility.SetDirty(regular);
+            }
+        }
 
         // Weight table: index 6 = 600 (semi bold), 7 = 700 (bold)
         var so = new SerializedObject(regular);
         SerializedProperty table = so.FindProperty("m_FontWeightTable");
-        if (table != null && table.arraySize > 7)
+        if (table != null && table.arraySize > 7 && bold != regular) // One-weight fonts: TMP fakes bold itself
         {
             table.GetArrayElementAtIndex(6).FindPropertyRelative("regularTypeface").objectReferenceValue = semiBold;
             table.GetArrayElementAtIndex(7).FindPropertyRelative("regularTypeface").objectReferenceValue = bold;
@@ -80,7 +98,7 @@ public static class GameFontSetup
             }
             else if (count > 0 && path == activePath) EditorSceneManager.SaveScene(scene);
         }
-        Debug.Log($"Game font: Titillium Web is the default TextMeshPro font now; {changed} texts switched.");
+        Debug.Log($"Game font: {regularName} is the default TextMeshPro font now; {changed} texts switched.");
     }
 
     static int SwapFonts(GameObject root, TMP_FontAsset font)

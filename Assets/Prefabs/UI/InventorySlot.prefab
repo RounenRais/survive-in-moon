@@ -217,8 +217,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 9a6e11031f88aca4d93eae124d4381ef, type: 2}
-  m_sharedMaterial: {fileID: 6628848180490745515, guid: 9a6e11031f88aca4d93eae124d4381ef, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 383bdb48a0d078d4cba18395e8cd90f9, type: 2}
+  m_sharedMaterial: {fileID: -2475629650864647438, guid: 383bdb48a0d078d4cba18395e8cd90f9, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -355,7 +355,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -382,6 +382,6 @@ MonoBehaviour:
   quantityText: {fileID: 8729788595214015141}
   categoryBar: {fileID: 798350511333577931}
   emptyColor: {r: 1, g: 1, b: 1, a: 0.05}
-  filledColor: {r: 1, g: 1, b: 1, a: 0.11}
-  hoverColor: {r: 1, g: 1, b: 1, a: 0.24}
+  filledColor: {r: 1, g: 1, b: 1, a: 0.1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 0.18}
   draggedIconAlpha: 0.35

@@ -39,29 +39,25 @@ public abstract class UIWindow : MonoBehaviour
         veil.offsetMin = veil.offsetMax = Vector2.zero;
         Image(veil, new Color(0f, 0f, 0f, 0.5f)).raycastTarget = true;
 
-        Rounded(Centered("Edge", veil, size + new Vector2(2f, 2f)), new Color(1f, 1f, 1f, 0.08f), 22); // 1-pixel light edge
         box = Centered("Window", veil, size);
-        Rounded(box, UITheme.Window, 22);
+        Skinned(box, UITheme.Window, UITheme.Skin.Window);
         return veil;
     }
 
-    // Small colored word over a big title, and the round x button at the top right
+    // The window title and a small x button at the top right (the kicker text is no longer shown)
     protected static void Header(RectTransform box, float width, string kicker, string title, UnityEngine.Events.UnityAction onClose)
     {
-        TMP_Text small = Text(Rect("Kicker", box, new Vector2(32f, 26f), new Vector2(400f, 20f)), kicker, 13f, true, TextAlignmentOptions.MidlineLeft);
-        small.color = UITheme.Accent;
-        small.characterSpacing = 8f;
-        Text(Rect("Title", box, new Vector2(32f, 48f), new Vector2(600f, 44f)), title, 34f, true, TextAlignmentOptions.MidlineLeft);
-        Button close = Button(box, new Vector2(width - 32f - 44f, 30f), new Vector2(44f, 44f), UITheme.Card, onClose);
-        Text(Rect("X", close.transform, Vector2.zero, new Vector2(44f, 44f)), "×", 28f, false, TextAlignmentOptions.Center);
+        Text(Rect("Title", box, new Vector2(32f, 36f), new Vector2(600f, 44f)), title, 30f, true, TextAlignmentOptions.MidlineLeft);
+        Button close = Button(box, new Vector2(width - 28f - 40f, 32f), new Vector2(40f, 40f), UITheme.Card, onClose);
+        Text(Rect("X", close.transform, Vector2.zero, new Vector2(40f, 40f)), "×", 26f, false, TextAlignmentOptions.Center).color = UITheme.TextDim;
     }
 
     // Small spaced-out capital letters that name a part of the window
     protected static void Section(RectTransform parent, string text, float x, float y)
     {
-        TMP_Text header = Text(Rect(text, parent, new Vector2(x, y), new Vector2(300f, 22f)), text, 12f, true, TextAlignmentOptions.MidlineLeft);
+        TMP_Text header = Text(Rect(text, parent, new Vector2(x, y), new Vector2(300f, 22f)), text, 15f, true, TextAlignmentOptions.MidlineLeft);
         header.color = UITheme.TextDim;
-        header.characterSpacing = 8f;
+        header.characterSpacing = 1.5f;
     }
 
     protected static RectTransform Rect(string name, Transform parent, Vector2 position, Vector2 size)
@@ -91,10 +87,20 @@ public abstract class UIWindow : MonoBehaviour
         return image;
     }
 
+    // A rounded surface; the radius picks the kind (window/panel/card/well), tiny ones (dots) keep their own radius.
     protected static Image Rounded(RectTransform rect, Color color, int radius)
     {
+        if (radius > 8) return Skinned(rect, color, UITheme.SkinForRadius(radius));
         Image image = Image(rect, color);
         image.sprite = UITheme.Rounded(radius);
+        image.type = UnityEngine.UI.Image.Type.Sliced;
+        return image;
+    }
+
+    protected static Image Skinned(RectTransform rect, Color color, UITheme.Skin skin)
+    {
+        Image image = Image(rect, color);
+        image.sprite = UITheme.SkinSprite(skin);
         image.type = UnityEngine.UI.Image.Type.Sliced;
         return image;
     }
@@ -148,7 +154,7 @@ public abstract class UIWindow : MonoBehaviour
     protected static Button Button(Transform parent, Vector2 position, Vector2 size, Color color, UnityEngine.Events.UnityAction onClick)
     {
         RectTransform rect = Rect("Button", parent, position, size);
-        Image image = Rounded(rect, color, 14);
+        Image image = Skinned(rect, color, UITheme.Skin.Button);
         image.raycastTarget = true;
         var button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = image;

@@ -8,8 +8,10 @@ public class PlayerMovement : MonoBehaviour
     public bool autoFitCollider = true; // Fits the CharacterController to the model's size at start
 
     [Header("Walking")]
-    public float speed = 4f;
-    public float acceleration = 6f; // Little grip on the moon: speeds up slowly
+    public float speed = 8f;        // Calm moon walk (the astronaut is ~16 units tall: about half a body per second)
+    public float sprintSpeed = 40f; // Very fast on purpose (presentation build) // Left Shift: long bounding steps, uses stamina (SurvivalStats)
+    public KeyCode sprintKey = KeyCode.LeftShift;
+    public float acceleration = 12f; // Little grip on the moon: speeds up gently
     public float stopTime = 0.15f; // After releasing the keys, smoothly stops in about this time
     public float turnSpeed = 8f; // How fast the character turns toward the movement direction
 
@@ -17,7 +19,7 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -4f; // Moon gravity (~1/6 of Earth's)
     public float jumpHeight = 1.6f;
     [Range(0f, 1f)] public float airControl = 0.2f; // How much you can steer while in the air
-    public float walkHopHeight = 0.4f; // Automatic kangaroo hop while walking at full speed (0 = off)
+    public float walkHopHeight = 0.3f; // Automatic kangaroo hop while walking at full speed (0 = off)
 
     // Coyote time: lets you still jump for a short moment after leaving the ground
     private float groundedTimer;
@@ -26,6 +28,10 @@ public class PlayerMovement : MonoBehaviour
     // States read by the animation script
     public bool IsInAir { get; private set; }
     public bool IsCrafting { get; private set; }
+    public bool IsSprinting { get; private set; }
+    // How fast the legs should move compared to a normal walk (the animation follows the real speed)
+    public float AnimationTempo => Mathf.Clamp(horizontalVelocity.magnitude / Mathf.Max(0.01f, speed), 0f, 1.8f);
+    public SurvivalStats Stats { get; private set; }
     public bool InVehicle => Vehicle != null;
     public MoonRover Vehicle { get; private set; }
     public float VerticalSpeed => verticalVelocity.y;
@@ -38,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 horizontalVelocity;
     private bool wasGroundedLastFrame = true;
     private Vector3 stopVelocity; // Internal velocity used by SmoothDamp
+    private float airTime;        // Seconds since we last touched the ground
 
     void Start()
     {
@@ -46,6 +53,9 @@ public class PlayerMovement : MonoBehaviour
         if (GetComponent<AstronautAnimation>() == null) gameObject.AddComponent<AstronautAnimation>();
         if (GetComponent<MoonDust>() == null) gameObject.AddComponent<MoonDust>();
         if (GetComponent<InteractionSystem>() == null) gameObject.AddComponent<InteractionSystem>();
+        Stats = GetComponent<SurvivalStats>();
+        if (Stats == null) Stats = gameObject.AddComponent<SurvivalStats>();
+        GameSystems.Ensure(); // Storms, HUD, map, base supplies (one each per scene)
 
         // The CharacterController does the movement. A physics body and extra colliders on the same object
         // would fight with it and push/shake the character, so they are turned off.
@@ -134,7 +144,7 @@ public class PlayerMovement : MonoBehaviour
         controller.height = height;
         controller.radius = radius;
         controller.center = new Vector3(localCenter.x, localBottom + height * 0.5f - controller.skinWidth / scaleY, localCenter.z);
-        controller.stepOffset = Mathf.Min(controller.stepOffset, height * 0.3f);
+        controller.stepOffset = height * 0.3f; // Climbs small rocks and lips instead of stopping dead at speed
     }
 
     // Called by MoonRover: sit in the seat. Our own movement and collider switch off; the rover carries us.
@@ -178,7 +188,8 @@ public class PlayerMovement : MonoBehaviour
 
             if (verticalVelocity.y < 0)
             {
-                verticalVelocity.y = -2f;
+                // Pressed onto the ground harder the faster we go, so running down a slope doesn't launch us
+                verticalVelocity.y = -Mathf.Max(2f, horizontalVelocity.magnitude * 1.5f);
             }
         }
         else
@@ -187,15 +198,23 @@ public class PlayerMovement : MonoBehaviour
             groundedTimer -= Time.deltaTime;
         }
         wasGroundedLastFrame = grounded;
-        IsInAir = !grounded;
+        airTime = grounded ? 0f : airTime + Time.deltaTime;
+        IsInAir = airTime > 0.15f || verticalVelocity.y > 1f; // A real jump/hop counts at once, a bump doesn't
 
-        // STEP 2: Input (WASD only; the arrow keys turn the camera)
-        float x = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
-        float z = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
+        // STEP 2: Input (WASD only; the arrow keys turn the camera). A full-screen menu (inventory, crew, build)
+        // freezes all input, so WASD/Space can't move or jump the character behind the open panel.
+        float x = 0f, z = 0f;
+        bool jumpPressed = false;
+        if (!InteractionSystem.MenuOpen)
+        {
+            x = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
+            z = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
+            jumpPressed = Input.GetButtonDown("Jump");
+        }
         bool hasMoveInput = new Vector2(x, z).sqrMagnitude > 0.01f;
 
         // F (rover, crafting, picking up) is read by InteractionSystem. Moving or jumping ends crafting
-        if (hasMoveInput || Input.GetButtonDown("Jump")) IsCrafting = false;
+        if (hasMoveInput || jumpPressed) IsCrafting = false;
         if (IsCrafting) { x = 0f; z = 0f; }
 
 
@@ -209,10 +228,16 @@ public class PlayerMovement : MonoBehaviour
         }
 
         Vector3 moveDirection = Vector3.ClampMagnitude(right * x + forward * z, 1f);
+        bool wantsSprint = hasMoveInput && !IsCrafting && !InteractionSystem.MenuOpen && Input.GetKey(sprintKey);
+        IsSprinting = wantsSprint && (Stats == null || Stats.CanSprint || (IsSprinting && Stats.Stamina > 0f));
+        float bonus = Stats != null ? Stats.SpeedMultiplier : 1f;
+        float targetSpeed = (IsSprinting ? sprintSpeed : speed) * bonus;
         if (hasMoveInput)
         {
-            float currentAcceleration = grounded ? acceleration : acceleration * airControl;
-            horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, moveDirection * speed, currentAcceleration * Time.deltaTime);
+            // Sprinting gets to speed right away, so it never feels like a slow ramp
+            float currentAcceleration = IsSprinting ? acceleration * 8f : grounded ? acceleration : acceleration * airControl;
+            if (IsSprinting) horizontalVelocity = moveDirection * targetSpeed; // Presentation sprint: turns on a dime, no sliding
+            else horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, moveDirection * targetSpeed, currentAcceleration * Time.deltaTime);
             stopVelocity = Vector3.zero;
         }
         else
@@ -231,18 +256,18 @@ public class PlayerMovement : MonoBehaviour
         if (moveDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
-            float turn = grounded ? turnSpeed : turnSpeed * 0.4f;
+            float turn = IsSprinting ? turnSpeed * 3f : grounded ? turnSpeed : turnSpeed * 0.4f;
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turn * Time.deltaTime);
         }
 
         // Animation: Speed blends between Idle and Run; as speed drops the run smoothly turns into idle
         if (animator != null)
         {
-            animator.SetFloat("Speed", Mathf.Clamp01(SpeedRatio), 0.08f, Time.deltaTime);
+            animator.SetFloat("Speed", Mathf.Clamp01(SpeedRatio), 0.08f, Time.deltaTime); // Idle -> Walk blend
         }
 
         // STEP 4: Jump (the grace timer is checked too)
-        if (Input.GetButtonDown("Jump") && groundedTimer > 0)
+        if (jumpPressed && groundedTimer > 0)
         {
             verticalVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             JumpStrength = 1f;
@@ -250,7 +275,7 @@ public class PlayerMovement : MonoBehaviour
         }
         // Walk on the moon with small hops like real astronauts.
         // Hop height grows with speed: low steps when slow, long glides when running
-        else if (grounded && hasMoveInput && walkHopHeight > 0f && SpeedRatio > 0.5f)
+        else if (grounded && hasMoveInput && !IsSprinting && walkHopHeight > 0f && SpeedRatio > 0.5f) // No hops while sprinting: smooth and fast
         {
             float hop = walkHopHeight * Mathf.InverseLerp(0.5f, 1f, SpeedRatio);
             verticalVelocity.y = Mathf.Sqrt(Mathf.Max(hop, walkHopHeight * 0.3f) * -2f * gravity);
